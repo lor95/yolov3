@@ -6,7 +6,6 @@ import shutil
 import time
 from pathlib import Path
 from threading import Thread
-
 import cv2
 import numpy as np
 import torch
@@ -95,16 +94,20 @@ class LoadImages:  # for inference
         else:
             # Read image
             self.count += 1
-            img0 = cv2.imread(path)  # BGR
-            assert img0 is not None, 'Image Not Found ' + path
-            print('image %g/%g %s: ' % (self.count, self.nF, path), end='')
+            channels_ = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15']
+            img0 = np.zeros((416,416,15),dtype="uint8")
+            for t in range(0,15):
+                print(channels_[t])
+                img0[:,:,t] = cv2.imread(path.replace('train/00_','train/'+channels_[t]+'/'+channels_[t]+'_'))  # BGR  
+            #assert img0 is not None, 'Image Not Found ' + path
+            #print('image %g/%g %s: ' % (self.count, self.nF, path), end='')
 
         # Padded resize
-        img = letterbox(img0, new_shape=self.img_size)[0]
+        # img = letterbox(img0, new_shape=self.img_size)[0]
 
         # Convert
-        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
-        img = np.ascontiguousarray(img)
+        # img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+        img = np.ascontiguousarray(img0) # l'argomento era img
 
         # cv2.imwrite(path + '.letterbox.jpg', 255 * img.transpose((1, 2, 0))[:, :, ::-1])  # save letterbox image
         return path, img, img0, self.cap
@@ -618,7 +621,7 @@ def load_mosaic(self, index):
     return img4, labels4
 
 
-def letterbox(img, new_shape=(416, 416), color=(114, 114, 114), auto=True, scaleFill=False, scaleup=True):
+def letterbox(img, new_shape=(416, 416), color=(114,114,114,114,114,114,114,114,114,114,114,114,114,114,114), auto=True, scaleFill=False, scaleup=True):
     # Resize image to a 32-pixel-multiple rectangle https://github.com/ultralytics/yolov3/issues/232
     shape = img.shape[:2]  # current shape [height, width]
     if isinstance(new_shape, int):
