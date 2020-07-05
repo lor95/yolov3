@@ -17,7 +17,7 @@ except:
     print('Apex recommended for faster mixed precision training: https://github.com/NVIDIA/apex')
     mixed_precision = False  # not installed
 
-wdir = 'weights' + os.sep  # weights dir
+wdir = 'yolov3/weights' + os.sep  # weights dir
 last = wdir + 'last.pt'
 best = wdir + 'best.pt'
 results_file = 'results.txt'
@@ -34,13 +34,13 @@ hyp = {'giou': 3.54,  # giou loss gain
        'momentum': 0.937,  # SGD momentum
        'weight_decay': 0.0005,  # optimizer weight decay
        'fl_gamma': 0.0,  # focal loss gamma (efficientDet default is gamma=1.5)
-       'hsv_h': 0.0138,  # image HSV-Hue augmentation (fraction)
-       'hsv_s': 0.678,  # image HSV-Saturation augmentation (fraction)
-       'hsv_v': 0.36,  # image HSV-Value augmentation (fraction)
-       'degrees': 1.98 * 0,  # image rotation (+/- deg)
-       'translate': 0.05 * 0,  # image translation (+/- fraction)
-       'scale': 0.05 * 0,  # image scale (+/- gain)
-       'shear': 0.641 * 0}  # image shear (+/- deg)
+       'hsv_h': 0,  # image HSV-Hue augmentation (fraction)
+       'hsv_s': 0,  # image HSV-Saturation augmentation (fraction)
+       'hsv_v': 0,  # image HSV-Value augmentation (fraction)
+       'degrees': 0,  # image rotation (+/- deg)
+       'translate': 0,  # image translation (+/- fraction)
+       'scale': 0,  # image scale (+/- gain)
+       'shear': 0}  # image shear (+/- deg)
 
 # Overwrite hyp with hyp*.txt (optional)
 f = glob.glob('hyp*.txt')
@@ -116,35 +116,29 @@ def train(hyp):
     attempt_download(weights)
     if weights.endswith('.pt'):  # pytorch format
         # possible weights are '*.pt', 'yolov3-spp.pt', 'yolov3-tiny.pt' etc.
-        ckpt = torch.load(weights, map_location=device)
+        chkpt = torch.load(weights, map_location=device)
 
         # load model
         try:
-            ckpt['model'] = {k: v for k, v in ckpt['model'].items() if model.state_dict()[k].numel() == v.numel()}
-            model.load_state_dict(ckpt['model'], strict=False)
+            chkpt['model'] = {k: v for k, v in chkpt['model'].items() if model.state_dict()[k].numel() == v.numel()}
+            model.load_state_dict(chkpt['model'], strict=False)
         except KeyError as e:
             s = "%s is not compatible with %s. Specify --weights '' or specify a --cfg compatible with %s. " \
                 "See https://github.com/ultralytics/yolov3/issues/657" % (opt.weights, opt.cfg, opt.weights)
             raise KeyError(s) from e
 
         # load optimizer
-        if ckpt['optimizer'] is not None:
-            optimizer.load_state_dict(ckpt['optimizer'])
-            best_fitness = ckpt['best_fitness']
+        if chkpt['optimizer'] is not None:
+            optimizer.load_state_dict(chkpt['optimizer'])
+            best_fitness = chkpt['best_fitness']
 
         # load results
-        if ckpt.get('training_results') is not None:
+        if chkpt.get('training_results') is not None:
             with open(results_file, 'w') as file:
-                file.write(ckpt['training_results'])  # write results.txt
+                file.write(chkpt['training_results'])  # write results.txt
 
-        # epochs
-        start_epoch = ckpt['epoch'] + 1
-        if epochs < start_epoch:
-            print('%s has been trained for %g epochs. Fine-tuning for %g additional epochs.' %
-                  (opt.weights, ckpt['epoch'], epochs))
-            epochs += ckpt['epoch']  # finetune additional epochs
-
-        del ckpt
+        start_epoch = chkpt['epoch'] + 1
+        del chkpt
 
     elif len(weights) > 0:  # darknet format
         # possible weights are '*.weights', 'yolov3-tiny.conv.15',  'darknet53.conv.74' etc.
@@ -355,17 +349,17 @@ def train(hyp):
         save = (not opt.nosave) or (final_epoch and not opt.evolve)
         if save:
             with open(results_file, 'r') as f:  # create checkpoint
-                ckpt = {'epoch': epoch,
+                chkpt = {'epoch': epoch,
                          'best_fitness': best_fitness,
                          'training_results': f.read(),
                          'model': ema.ema.module.state_dict() if hasattr(model, 'module') else ema.ema.state_dict(),
                          'optimizer': None if final_epoch else optimizer.state_dict()}
 
             # Save last, best and delete
-            torch.save(ckpt, last)
+            torch.save(chkpt, last)
             if (best_fitness == fi) and not final_epoch:
-                torch.save(ckpt, best)
-            del ckpt
+                torch.save(chkpt, best)
+            del chkpt
 
         # end epoch ----------------------------------------------------------------------------------------------------
     # end training
@@ -411,7 +405,7 @@ if __name__ == '__main__':
     parser.add_argument('--single-cls', action='store_true', help='train as single-class dataset')
     parser.add_argument('--freeze-layers', action='store_true', help='Freeze non-output layers')  
     opt = parser.parse_args()
-    opt.weights = last if opt.resume and not opt.weights else opt.weights
+    opt.weights = last if opt.resume else opt.weights
     check_git_status()
     opt.cfg = check_file(opt.cfg)  # check file
     opt.data = check_file(opt.data)  # check file
