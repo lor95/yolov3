@@ -95,23 +95,23 @@ class LoadImages:  # for inference
             # Read image
             self.count += 1
             channels_ = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15']
-            img0 = np.zeros((15,416,416),dtype="uint8")
+            img0 = np.zeros((416,416,15),dtype="uint8")
             for t in range(0,15):
                 if "train/" in path:
-                    img0[t,:,:] = cv2.imread(path.replace('train/00_','train/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)  # BGR  
+                    img0[:,:,t] = cv2.imread(path.replace('train/00_','train/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)  # BGR  
                 elif "validation/" in path:
-                    img0[t,:,:] = cv2.imread(path.replace('validation/00_','validation/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)  # BGR 
+                    img0[:,:,t] = cv2.imread(path.replace('validation/00_','validation/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)  # BGR 
                 elif "samples/" in path:
-                    img0[t,:,:] = cv2.imread(path.replace('samples/00_','images/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)
+                    img0[:,:,t] = cv2.imread(path.replace('samples/00_','images/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)
             #assert img0 is not None, 'Image Not Found ' + path
             #print('image %g/%g %s: ' % (self.count, self.nF, path), end='')
 
         # Padded resize
-        # img = letterbox(img0, new_shape=self.img_size)[0]
+        img = letterbox(img0, new_shape=self.img_size)[0]
 
         # Convert
-        # img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
-        img = np.ascontiguousarray(img0) # l'argomento era img
+        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+        img = np.ascontiguousarray(img) # l'argomento era img
 
         # cv2.imwrite(path + '.letterbox.jpg', 255 * img.transpose((1, 2, 0))[:, :, ::-1])  # save letterbox image
         return path, img, img0, self.cap
