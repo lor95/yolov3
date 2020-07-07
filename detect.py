@@ -42,7 +42,7 @@ def detect(save_img=False):
     # Export mode
     if ONNX_EXPORT:
         model.fuse()
-        img = torch.zeros((1, 3) + imgsz)  # (1, 3, 320, 192)
+        img = torch.zeros((1, 15) + imgsz)  # (1, 3, 320, 192)
         f = opt.weights.replace(opt.weights.split('.')[-1], 'onnx')  # *.onnx filename
         torch.onnx.export(model, img, f, verbose=False, opset_version=11,
                           input_names=['images'], output_names=['classes', 'boxes'])
@@ -75,7 +75,7 @@ def detect(save_img=False):
 
     # Run inference
     t0 = time.time()
-    img = torch.zeros((1, 3, imgsz, imgsz), device=device)  # init img
+    img = torch.zeros((1, 15, imgsz, imgsz), device=device)  # init img
     _ = model(img.half() if half else img.float()) if device.type != 'cpu' else None  # run once
     for path, img, im0s, vid_cap in dataset:
         img = torch.from_numpy(img).to(device)
@@ -143,7 +143,7 @@ def detect(save_img=False):
             # Save results (image with detections)
             if save_img:
                 if dataset.mode == 'images':
-                    cv2.imwrite(save_path, im0)
+                    cv2.imwrite(save_path, im0[:,:,:3])
                 else:
                     if vid_path != save_path:  # new video
                         vid_path = save_path
