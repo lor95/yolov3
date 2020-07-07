@@ -536,7 +536,20 @@ def load_image(self, index):
     img = self.imgs[index]
     if img is None:  # not cached
         path = self.img_files[index]
-        img = cv2.imread(path)  # BGR
+#PARTE AGGIUNTA
+	# Read image
+        #self.count += 1
+        channels_ = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15']
+       	img = np.zeros((416,416,15))
+        for t in range(0,15):
+            if "train/" in path:
+            	img[:,:,t] = cv2.imread(path.replace('train/00_','train/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)  # BGR  
+            elif "validation/" in path:
+            	img[:,:,t] = cv2.imread(path.replace('validation/00_','validation/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)  # BGR 
+            elif "samples/" in path:
+            	img[:,:,t] = cv2.imread(path.replace('samples/00_','images/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)
+#FINE PARTE AGGIUNTA
+        #img = cv2.imread(path)  # BGR
         assert img is not None, 'Image Not Found ' + path
         h0, w0 = img.shape[:2]  # orig hw
         r = self.img_size / max(h0, w0)  # resize image to img_size
@@ -549,6 +562,7 @@ def load_image(self, index):
 
 
 def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):
+    '''
     r = np.random.uniform(-1, 1, 3) * [hgain, sgain, vgain] + 1  # random gains
     hue, sat, val = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
     dtype = img.dtype  # uint8
@@ -560,7 +574,7 @@ def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):
 
     img_hsv = cv2.merge((cv2.LUT(hue, lut_hue), cv2.LUT(sat, lut_sat), cv2.LUT(val, lut_val))).astype(dtype)
     cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)  # no return needed
-
+    '''
     # Histogram equalization
     # if random.random() < 0.2:
     #     for i in range(3):
