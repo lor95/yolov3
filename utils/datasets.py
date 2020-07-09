@@ -107,13 +107,14 @@ class LoadImages:  # for inference
             #print('image %g/%g %s: ' % (self.count, self.nF, path), end='')
 
         # Padded resize
+        #print(img0.shape)(416,416,15) #detect
         img = letterbox(img0, new_shape=self.img_size)[0]
 
         # Convert
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
-        img = np.ascontiguousarray(img) # l'argomento era img
-
+        img = np.ascontiguousarray(img) 
         # cv2.imwrite(path + '.letterbox.jpg', 255 * img.transpose((1, 2, 0))[:, :, ::-1])  # save letterbox image
+        #print(img.shape) (15,512,512) #detect
         return path, img, img0, self.cap
 
     def new_video(self, path):
@@ -433,7 +434,6 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                     _ = io.imread(file)
                 except:
                     print('Corrupted image detected: %s' % file)
-
     def __len__(self):
         return len(self.img_files)
 
@@ -452,6 +452,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             # Load mosaic
             img, labels = load_mosaic(self, index)
             shapes = None
+            #print(img.shape) (640,640,15)
 
         else:
             # Load image
@@ -472,6 +473,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                 labels[:, 2] = ratio[1] * h * (x[:, 2] - x[:, 4] / 2) + pad[1]  # pad height
                 labels[:, 3] = ratio[0] * w * (x[:, 1] + x[:, 3] / 2) + pad[0]
                 labels[:, 4] = ratio[1] * h * (x[:, 2] + x[:, 4] / 2) + pad[1]
+            #print(img.shape) (640,640,15)
 
         if self.augment:
             # Augment imagespace
@@ -520,12 +522,12 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         # Convert
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
         img = np.ascontiguousarray(img)
-
+        #print(img.shape) (15,640,640)
         return torch.from_numpy(img), labels_out, self.img_files[index], shapes
 
     @staticmethod
     def collate_fn(batch):
-        img, label, path, shapes = zip(*batch)  # transposed
+        img, label, path, shapes = zip(*batch)  # d
         for i, l in enumerate(label):
             l[:, 0] = i  # add target image index for build_targets()
         return torch.stack(img, 0), torch.cat(label, 0), path, shapes
@@ -550,14 +552,17 @@ def load_image(self, index):
             	img[:,:,t] = cv2.imread(path.replace('samples/00_','images/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)
 #FINE PARTE AGGIUNTA
         #img = cv2.imread(path)  # BGR
+        #print(img.shape) (416,416,15)
         assert img is not None, 'Image Not Found ' + path
         h0, w0 = img.shape[:2]  # orig hw
         r = self.img_size / max(h0, w0)  # resize image to img_size
         if r != 1:  # always resize down, only resize up if training with augmentation
             interp = cv2.INTER_AREA if r < 1 and not self.augment else cv2.INTER_LINEAR
             img = cv2.resize(img, (int(w0 * r), int(h0 * r)), interpolation=interp)
+        #print(img.shape)    (640,640,15)
         return img, (h0, w0), img.shape[:2]  # img, hw_original, hw_resized
     else:
+        #print(self.imgs[index]) non ci arriva
         return self.imgs[index], self.img_hw0[index], self.img_hw[index]  # img, hw_original, hw_resized
 
 
@@ -636,6 +641,7 @@ def load_mosaic(self, index):
                                   shear=self.hyp['shear'],
                                   border=-s // 2)  # border to remove
 
+    #print(img4.shape) (640,640,15)
     return img4, labels4
 
 
@@ -668,7 +674,9 @@ def letterbox(img, new_shape=(416, 416), color=(114,114,114), auto=True, scaleFi
         img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_LINEAR)
     top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
     left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
+    #print(img.shape) (640,640,15)
     img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # add border
+    #print(img.shape) (640,640,15)
     return img, ratio, (dw, dh)
 
 
@@ -737,7 +745,7 @@ def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10,
 
         targets = targets[i]
         targets[:, 1:5] = xy[i]
-
+    #print(img.shape) (640,640,15)
     return img, targets
 
 
@@ -796,6 +804,7 @@ def reduce_img_size(path='../data/sm4/images', img_size=1024):  # from utils.dat
     for f in tqdm(glob.glob('%s/*.*' % path)):
         try:
             img = cv2.imread(f)
+            #print(img.shape) non ci arriva
             h, w = img.shape[:2]
             r = img_size / max(h, w)  # size ratio
             if r < 1.0:

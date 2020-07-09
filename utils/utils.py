@@ -638,6 +638,7 @@ def crop_images_random(path='../images/', scale=0.50):  # from utils.utils impor
 
             # apply random color mask
             cv2.imwrite(file, img[ymin:ymax, xmin:xmax])
+            #print(img.shape) (640,640,15)
 
 
 def coco_single_class_labels(path='../coco/labels/train2014/', label_class=43):
@@ -783,6 +784,8 @@ def apply_classifier(x, model, img, im0):
                 im = np.ascontiguousarray(im, dtype=np.float32)  # uint8 to float32
                 im /= 255.0  # 0 - 255 to 0.0 - 1.0
                 ims.append(im)
+                #print(im.shape) #non ci arriva se non c'è niente da classificare #detect
+                #print(ims.shape) #non ci arriva se non c'è niente da classificare #detect
 
             pred_cls2 = model(torch.Tensor(ims).to(d.device)).argmax(1)  # classifier prediction
             x[i] = x[i][pred_cls1 == pred_cls2]  # retain matching class detections
@@ -827,11 +830,13 @@ def plot_one_box(x, img, color=None, label=None, line_thickness=None):
     tl = line_thickness or round(0.002 * (img.shape[0] + img.shape[1]) / 2) + 1  # line/font thickness
     color = color or [random.randint(0, 255) for _ in range(3)]
     c1, c2 = (int(x[0]), int(x[1])), (int(x[2]), int(x[3]))
+    #print(img.shape) #(1024,1024,3) perchè gli passiamo già il mosaic così
     cv2.rectangle(img[:,:,:3], c1, c2, color, thickness=tl, lineType=cv2.LINE_AA)
     if label:
         tf = max(tl - 1, 1)  # font thickness
         t_size = cv2.getTextSize(label, 0, fontScale=tl / 3, thickness=tf)[0]
         c2 = c1[0] + t_size[0], c1[1] - t_size[1] - 3
+        #print(img.shape) (1024,1024,3)
         cv2.rectangle(img[:,:,:3], c1, c2, color, -1, cv2.LINE_AA)  # filled
         cv2.putText(img[:,:,:3], label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
 
@@ -884,7 +889,7 @@ def plot_images(images, targets, paths=None, fname='images.jpg', names=None, max
 
     # Empty array for output
     mosaic = np.full((int(ns * h), int(ns * w), 15), 255, dtype=np.uint8)
-
+    #print(mosaic.shape) (1280, 1280, 15)
     # Fix class - colour map
     prop_cycle = plt.rcParams['axes.prop_cycle']
     # https://stackoverflow.com/questions/51350872/python-from-color-name-to-rgb
@@ -898,7 +903,9 @@ def plot_images(images, targets, paths=None, fname='images.jpg', names=None, max
         block_x = int(w * (i // ns))
         block_y = int(h * (i % ns))
 
+        #print(img.shape) (512, 512, 15)
         img = img.transpose(1, 2, 0)
+        #print(img.shape) (15, 512, 512)
         if scale_factor < 1:
             img = cv2.resize(img, (w, h))
 
@@ -927,6 +934,7 @@ def plot_images(images, targets, paths=None, fname='images.jpg', names=None, max
         if paths is not None:
             label = os.path.basename(paths[i])[:40]  # trim to 40 char
             t_size = cv2.getTextSize(label, 0, fontScale=tl / 3, thickness=tf)[0]
+            #print(mosaic.shape) (1024, 1024, 15)
             cv2.putText(mosaic[:,:,:3], label, (block_x + 5, block_y + t_size[1] + 5), 0, tl / 3, [220, 220, 220], thickness=tf,
                         lineType=cv2.LINE_AA)
 
@@ -934,9 +942,11 @@ def plot_images(images, targets, paths=None, fname='images.jpg', names=None, max
         cv2.rectangle(mosaic[:,:,:3], (block_x, block_y), (block_x + w, block_y + h), (255, 255, 255), thickness=3)
 
     if fname is not None:
+        #print(mosaic.shape) (1280,1280,15)
         mosaic = cv2.resize(mosaic[:,:,:3], (int(ns * w * 0.5), int(ns * h * 0.5)), interpolation=cv2.INTER_AREA)
         cv2.imwrite(fname, cv2.cvtColor(mosaic, cv2.COLOR_BGR2RGB))
 
+    #print(mosaic.shape) #(640, 640, 3) 
     return mosaic
 
 
