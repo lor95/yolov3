@@ -542,17 +542,18 @@ def load_image(self, index):
 	# Read image
         #self.count += 1
         channels_ = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15']
-       	img = np.zeros((416,416,15))
+       	img = np.zeros((416,416,15),dtype="uint8")
         for t in range(0,15):
             if "train/" in path:
-            	img[:,:,t] = np.array(cv2.imread(path.replace('train/00_','train/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE))  # BGR  
+              #.replace('train/00_','train/'+channels_[t]+'/'+channels_[t]+'_')
+            	img[:,:,t] = cv2.imread(path.replace('train/00_',channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)  # BGR 
             elif "validation/" in path:
-            	img[:,:,t] = np.array(cv2.imread(path.replace('validation/00_','validation/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE))  # BGR 
+            	img[:,:,t] = cv2.imread(path,cv2.IMREAD_GRAYSCALE)  # BGR 
             elif "samples/" in path:
-            	img[:,:,t] = np.array(cv2.imread(path.replace('samples/00_','images/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE))
+            	img[:,:,t] = cv2.imread(path,cv2.IMREAD_GRAYSCALE)
 #FINE PARTE AGGIUNTA
         #img = cv2.imread(path)  # BGR
-        #print(img.shape) (416,416,15)
+
         assert img is not None, 'Image Not Found ' + path
         h0, w0 = img.shape[:2]  # orig hw
         r = self.img_size / max(h0, w0)  # resize image to img_size
