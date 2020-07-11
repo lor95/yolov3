@@ -98,9 +98,9 @@ class LoadImages:  # for inference
             img0 = np.zeros((416,416,15),dtype="uint8")
             for t in range(0,15):
                 if "train/" in path:
-                    img0[:,:,t] = cv2.imread(path.replace('train/00_','train/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)  # BGR  
+                    img0[:,:,t] = cv2.imread(path.replace('train/00_',channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)  # BGR  
                 elif "validation/" in path:
-                    img0[:,:,t] = cv2.imread(path.replace('validation/00_','validation/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)  # BGR 
+                    img0[:,:,t] = cv2.imread(path.replace('validation/00_',channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)  # BGR 
                 elif "samples/" in path:
                     img0[:,:,t] = cv2.imread(path.replace('samples/00_','images/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)
             #assert img0 is not None, 'Image Not Found ' + path
