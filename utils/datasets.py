@@ -548,9 +548,9 @@ def load_image(self, index):
               #.replace('train/00_','train/'+channels_[t]+'/'+channels_[t]+'_')
             	img[:,:,t] = cv2.imread(path.replace('train/00_',channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)  # BGR 
             elif "validation/" in path:
-            	img[:,:,t] = cv2.imread(path,cv2.IMREAD_GRAYSCALE)  # BGR 
+            	img[:,:,t] = cv2.imread(path.replace('validation/00_',channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)  # BGR 
             elif "samples/" in path:
-            	img[:,:,t] = cv2.imread(path,cv2.IMREAD_GRAYSCALE)
+            	img[:,:,t] = cv2.imread(path.replace('samples/00_','images/'+channels_[t]+'/'+channels_[t]+'_'),cv2.IMREAD_GRAYSCALE)
 #FINE PARTE AGGIUNTA
         #img = cv2.imread(path)  # BGR
 
